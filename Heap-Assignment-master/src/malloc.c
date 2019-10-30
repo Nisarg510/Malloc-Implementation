@@ -118,18 +118,18 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 #if defined WORST && WORST == 0
    printf("TODO: Implement worst fit here\n");
     
-    if(best_fit == NULL)
+    if(worst_fit == NULL)
     {
-        best_fit = curr;
+        worst_fit = curr;
     }
     
     while (curr != NULL)
     {
         if(curr->free && curr->size >= size)
         {
-            if( best_fit->size >   curr->size)
+            if( worst_fit->size >   curr->size)
             {
-                best_fit = curr ;
+                worst_fit = curr ;
             }
             
             else
@@ -137,7 +137,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
                 //
             }
         }
-        *last = best_fit;
+        *last = worst_fit;
        
         
     }
