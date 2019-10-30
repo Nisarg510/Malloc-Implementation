@@ -5,7 +5,6 @@
     Hemantha Govindu
     1001531660
  
- 
  */
 
 
@@ -91,6 +90,8 @@ struct _block *worst_fit = NULL;
 struct _block *findFreeBlock(struct _block **last, size_t size) 
 {
    struct _block *curr = freeList;
+    
+   // max_heap = max_heap + curr->size;
 
         
 #if defined FIT && FIT == 0
@@ -273,6 +274,8 @@ struct _block *growHeap(struct _block *last, size_t size)
 void *malloc(size_t size) 
 {
 
+    num_requested = size;
+    
    if( atexit_registered == 0 )
    {
       atexit_registered = 1;
@@ -357,6 +360,8 @@ void free(void *ptr)
    {
       return;
    }
+    
+    num_frees++;
 
    /* Make _block as free */
    struct _block *curr = BLOCK_HEADER(ptr);
