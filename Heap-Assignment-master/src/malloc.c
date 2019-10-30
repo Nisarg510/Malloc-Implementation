@@ -1,8 +1,23 @@
+/*
+    Nisarg Shah
+    1001553132
+ 
+    Hemantha Govindu
+    1001531660
+ 
+ 
+ */
+
+
+
+
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ALIGN4(s)         (((((s) - 1) >> 2) << 2) + 4)
 #define BLOCK_DATA(b)      ((b) + 1)
@@ -77,17 +92,25 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 {
    struct _block *curr = freeList;
 
+        
 #if defined FIT && FIT == 0
    /* First fit */
+    
+    
+    
    while (curr && !(curr->free && curr->size >= size)) 
    {
       *last = curr;
+       
+       num_blocks++;
       curr  = curr->next;
    }
+    
+    num_mallocs++;
 #endif
 
 #if defined BEST && BEST == 0
-   printf("TODO: Implement best fit here\n");
+   //printf("TODO: Implement best fit here\n");
     if(best_fit == NULL)
     {
         best_fit = curr;
@@ -95,6 +118,9 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     
     while (curr != NULL)
     {
+        num_frees++;
+        //printf("zzzzz");
+        
         if(curr->free && curr->size >= size)
         {
             if( best_fit->size < curr->size)
@@ -107,10 +133,15 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
                 //
             }
         }
-        *last = best_fit;
-       
+        
+        
+        curr = curr->next;
         
     }
+    
+    *last = best_fit;
+    num_mallocs++;
+
     
     
 #endif
@@ -125,8 +156,13 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     
     while (curr != NULL)
     {
+        if(curr->free)
+        {
+            num_frees++;
+        }
         if(curr->free && curr->size >= size)
         {
+            
             if( worst_fit->size >   curr->size)
             {
                 worst_fit = curr ;
@@ -137,10 +173,14 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
                 //
             }
         }
-        *last = worst_fit;
-       
+        
+        curr = curr->next;
         
     }
+    
+    *last = worst_fit;
+    num_mallocs++;
+
 #endif
 
 #if defined NEXT && NEXT == 0
@@ -148,6 +188,10 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     if(next_fit == NULL)
     {
         next_fit = curr;
+    }
+    if(curr->free)
+    {
+        num_frees++;
     }
     
     while((curr && !(curr->free && curr->size >= size)) )
@@ -158,8 +202,12 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     }
     
     curr = next_fit;
+    num_mallocs++;
+
     
 #endif
+    
+    
     
 
    return curr;
@@ -265,6 +313,34 @@ void *malloc(size_t size)
    return BLOCK_DATA(next);
 }
 
+void *calloc(size_t nmemb, size_t size)
+{
+    while(nmemb != 0 && size !=0)
+    {
+        struct _block *calloc_ptr = malloc(nmemb*size);
+        memset(calloc_ptr,0,sizeof(calloc_ptr));
+        return calloc_ptr;
+        
+        
+    }
+    
+    return NULL;
+}
+
+
+void *realloc(void *ptr, size_t size)
+{
+    while(size != 0 )
+    {
+        struct _block *relloc_ptr = malloc(size);
+        memcpy(relloc_ptr, ptr ,size );
+        free(ptr);
+        return relloc_ptr;
+    }
+    
+    return NULL;
+    
+}
 /*
  * \brief free
  *
