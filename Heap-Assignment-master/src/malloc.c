@@ -6,11 +6,6 @@
     1001531660
  
  */
-
-
-
-
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -91,13 +86,9 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 {
    struct _block *curr = freeList;
     
-   // max_heap = max_heap + curr->size;
-
-        
 #if defined FIT && FIT == 0
-   /* First fit */
-    
-    
+   
+    /* First fit */
     
    while (curr && !(curr->free && curr->size >= size)) 
    {
@@ -111,7 +102,9 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 #endif
 
 #if defined BEST && BEST == 0
-   //printf("TODO: Implement best fit here\n");
+   
+    //printf("TODO: Implement best fit here\n");
+    
     if(best_fit == NULL)
     {
         best_fit = curr;
@@ -120,20 +113,25 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     while (curr != NULL)
     {
         num_frees++;
-        //printf("zzzzz");
         
-        if(curr->free && curr->size >= size)
+        if(curr->free)
         {
-            if( best_fit->size < curr->size)
-            {
-                best_fit = curr ;
-            }
-            
-            else
-            {
-                //
-            }
+            num_blocks++;
         }
+    
+          if( curr->size >= size)
+          {
+                if( best_fit->size < curr->size)
+                {
+                    best_fit = curr ;
+                }
+            
+                else
+                {
+                //
+                }
+          }
+        
         
         
         curr = curr->next;
@@ -148,7 +146,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 #endif
 
 #if defined WORST && WORST == 0
-   printf("TODO: Implement worst fit here\n");
+  // printf("TODO: Implement worst fit here\n");
     
     if(worst_fit == NULL)
     {
@@ -185,7 +183,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 #endif
 
 #if defined NEXT && NEXT == 0
-   printf("TODO: Implement next fit here\n");
+   //printf("TODO: Implement next fit here\n");
     if(next_fit == NULL)
     {
         next_fit = curr;
@@ -239,6 +237,7 @@ struct _block *growHeap(struct _block *last, size_t size)
    {
       return NULL;
    }
+    num_grows++;
 
    /* Update freeList if not set */
    if (freeList == NULL) 
@@ -296,12 +295,46 @@ void *malloc(size_t size)
    struct _block *next = findFreeBlock(&last, size);
 
    /* TODO: Split free _block if possible */
-
-   /* Could not find free _block, so grow heap */
+    if(next != NULL && next->size > size)
+    {
+        printf("zzzzz");
+        num_splits++;
+        
+        size_t mem_left;
+        mem_left = next->size - size;
+        next->size = mem_left;
+        struct _block *new = (struct _block *)sbrk(sizeof(struct _block) + mem_left);     //making a new block using the syntax provided in the skeleton code.
+        
+        if(next->next == NULL)
+        {
+            return NULL;
+        }
+        
+        else
+        {
+            return next->next;
+        }
+        
+        num_blocks++;
+        new->size = mem_left;
+        new->free = true;
+        //num_blocks++;
+        
+    }
+    
+    
+    
+    
+    
+    
+    /* Could not find free _block, so grow heap */
    if (next == NULL) 
    {
       next = growHeap(last, size);
+       num_blocks++;
+       //num_grows++;
    }
+   
 
    /* Could not find free _block or grow heap, so just return NULL */
    if (next == NULL) 
@@ -367,8 +400,29 @@ void free(void *ptr)
    struct _block *curr = BLOCK_HEADER(ptr);
    assert(curr->free == 0);
    curr->free = true;
+    
+   
 
    /* TODO: Coalesce free _blocks if needed */
+    
+    curr = freeList;
+    while ( curr )
+    {
+         struct _block *next_block = curr->next;
+        if( curr && next_block && curr->free && next_block->free)
+        {
+            num_blocks--;
+            num_coalesces++;
+            curr->size += next_block->size; //Need to increase the block size. adding the current block size and the next block size.
+           // printf("It works!");
+            curr->next = next_block->next; //final step in joining two blocks. assignning the nect pointer to the next_block one
+        }
+        curr = curr->next; //Moving to the next free block.
+    }
+     
+    
+    
+    
 }
 
 /* vim: set expandtab sts=3 sw=3 ts=6 ft=cpp: --------------------------------*/
