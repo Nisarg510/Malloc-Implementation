@@ -99,7 +99,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
       curr  = curr->next;
    }
     
-    num_mallocs++;
+    
 #endif
 
 #if defined BEST && BEST == 0
@@ -113,7 +113,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     
     while (curr != NULL)
     {
-        num_frees++;
+        //num_frees++;
         
         if(curr->free)
         {
@@ -140,7 +140,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     }
     
     *last = best_fit;
-    num_mallocs++;
+    
 
     
     
@@ -156,10 +156,10 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     
     while (curr != NULL)
     {
-        if(curr->free)
+       /* if(curr->free)
         {
             num_frees++;
-        }
+        }*/
         if(curr->free && curr->size >= size)
         {
             
@@ -179,35 +179,29 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
     }
     
     *last = worst_fit;
-    num_mallocs++;
+   
 
 #endif
 
 #if defined NEXT && NEXT == 0
    //printf("TODO: Implement next fit here\n");
-    if(next_fit == NULL)
+    if(next_fit != NULL)
     {
-        next_fit = curr;
+        curr = next_fit;
     }
-    if(curr->free)
-    {
-        num_frees++;
-    }
-    
-    while((curr && !(curr->free && curr->size >= size)) )
+   
+    while(curr && !(curr->free && curr->size >= size))
     {
         *last = curr;
         curr  = curr->next;
         
     }
     
-    curr = next_fit;
-    num_mallocs++;
+    next_fit = curr;
+    
 
-    
-#endif
-    
-    
+    #endif
+
     
 
    return curr;
@@ -275,7 +269,8 @@ struct _block *growHeap(struct _block *last, size_t size)
 void *malloc(size_t size)
 {
 
-    num_requested = size;
+    num_mallocs++;
+    num_requested += size;
     
    if( atexit_registered == 0 )
    {
@@ -303,7 +298,7 @@ void *malloc(size_t size)
         
         if(num_mallocs > 1)
         {
-            num_reuses++;
+            num_reuses++;       //the blocks are reused if the we dont request any new block and we have a block that can fit in any existing blocks
         }
         num_splits++;
         
