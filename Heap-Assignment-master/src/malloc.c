@@ -53,7 +53,7 @@ void printStatistics( void )
   printf("max heap:\t%d\n", max_heap );
 }
 
-struct _block 
+struct _block
 {
    size_t  size;         /* Size of the allocated _block of memory in bytes */
    struct _block *prev;  /* Pointer to the previous _block of allcated memory   */
@@ -74,7 +74,7 @@ struct _block *worst_fit = NULL;
  * \brief findFreeBlock
  *
  * \param last pointer to the linked list of free _blocks
- * \param size size of the _block needed in bytes 
+ * \param size size of the _block needed in bytes
  *
  * \return a _block that fits the request or NULL if no free _block matches
  *
@@ -82,7 +82,7 @@ struct _block *worst_fit = NULL;
  * \TODO Implement Best Fit
  * \TODO Implement Worst Fit
  */
-struct _block *findFreeBlock(struct _block **last, size_t size) 
+struct _block *findFreeBlock(struct _block **last, size_t size)
 {
    struct _block *curr = freeList;
     
@@ -90,7 +90,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
    
     /* First fit */
     
-   while (curr && !(curr->free && curr->size >= size)) 
+   while (curr && !(curr->free && curr->size >= size))
    {
       *last = curr;
        
@@ -215,7 +215,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 /*
  * \brief growheap
  *
- * Given a requested size of memory, use sbrk() to dynamically 
+ * Given a requested size of memory, use sbrk() to dynamically
  * increase the data segment of the calling process.  Updates
  * the free list with the newly allocated memory.
  *
@@ -224,7 +224,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
  *
  * \return returns the newly allocated _block of NULL if failed
  */
-struct _block *growHeap(struct _block *last, size_t size) 
+struct _block *growHeap(struct _block *last, size_t size)
 {
    /* Request more space from OS */
    struct _block *curr = (struct _block *)sbrk(0);
@@ -233,24 +233,25 @@ struct _block *growHeap(struct _block *last, size_t size)
    assert(curr == prev);
 
    /* OS allocation failed */
-   if (curr == (struct _block *)-1) 
+   if (curr == (struct _block *)-1)
    {
       return NULL;
    }
     num_grows++;
 
    /* Update freeList if not set */
-   if (freeList == NULL) 
+   if (freeList == NULL)
    {
       freeList = curr;
    }
 
    /* Attach new _block to prev _block */
-   if (last) 
+   if (last)
    {
       last->next = curr;
    }
 
+    max_heap+=size;
    /* Update _block metadata */
    curr->size = size;
    curr->next = NULL;
@@ -262,15 +263,15 @@ struct _block *growHeap(struct _block *last, size_t size)
  * \brief malloc
  *
  * finds a free _block of heap memory for the calling process.
- * if there is no free _block that satisfies the request then grows the 
+ * if there is no free _block that satisfies the request then grows the
  * heap and returns a new _block
  *
  * \param size size of the requested memory in bytes
  *
- * \return returns the requested memory allocation to the calling process 
+ * \return returns the requested memory allocation to the calling process
  * or NULL if failed
  */
-void *malloc(size_t size) 
+void *malloc(size_t size)
 {
 
     num_requested = size;
@@ -285,7 +286,7 @@ void *malloc(size_t size)
    size = ALIGN4(size);
 
    /* Handle 0 size */
-   if (size == 0) 
+   if (size == 0)
    {
       return NULL;
    }
@@ -328,16 +329,21 @@ void *malloc(size_t size)
     
     
     /* Could not find free _block, so grow heap */
-   if (next == NULL) 
+   if (next == NULL)
    {
       next = growHeap(last, size);
+       
        num_blocks++;
        //num_grows++;
    }
+    else
+    {
+        num_reuses++;
+    }
    
 
    /* Could not find free _block or grow heap, so just return NULL */
-   if (next == NULL) 
+   if (next == NULL)
    {
       return NULL;
    }
@@ -387,9 +393,9 @@ void *realloc(void *ptr, size_t size)
  *
  * \return none
  */
-void free(void *ptr) 
+void free(void *ptr)
 {
-   if (ptr == NULL) 
+   if (ptr == NULL)
    {
       return;
    }
