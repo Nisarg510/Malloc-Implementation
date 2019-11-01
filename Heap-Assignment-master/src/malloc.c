@@ -60,6 +60,7 @@ struct _block
    struct _block *next;  /* Pointer to the next _block of allcated memory   */
    bool   free;          /* Is this _block free?                     */
    char   padding[3];
+   
 };
 
 
@@ -298,7 +299,12 @@ void *malloc(size_t size)
    /* TODO: Split free _block if possible */
     if(next != NULL && next->size > size)
     {
-        printf("zzzzz");
+     //   printf("zzzzz");
+        
+        if(num_mallocs > 1)
+        {
+            num_reuses++;
+        }
         num_splits++;
         
         size_t mem_left;
@@ -323,11 +329,6 @@ void *malloc(size_t size)
         
     }
     
-    
-    
-    
-    
-    
     /* Could not find free _block, so grow heap */
    if (next == NULL)
    {
@@ -336,10 +337,7 @@ void *malloc(size_t size)
        num_blocks++;
        //num_grows++;
    }
-    else
-    {
-        num_reuses++;
-    }
+    
    
 
    /* Could not find free _block or grow heap, so just return NULL */
